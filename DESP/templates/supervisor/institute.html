@@ -269,6 +269,14 @@
     <nav class="navbar navbar-expand-lg navbar-light bg-faded">
         <div class="container-fluid">
             <div class="navbar-header">
+                <button type="button" data-toggle="collapse" class="navbar-toggle d-lg-none float-left"><span
+                        class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span
+                        class="icon-bar"></span><span class="icon-bar"></span></button>
+                <span class="d-lg-none navbar-right navbar-collapse-toggle"><a class="open-navbar-container"><i
+                        class="ft-more-vertical"></i></a></span><a id="navbar-fullscreen" href="javascript:;"
+                                                                   class="mr-2 display-inline-block apptogglefullscreen"><i
+                    class="ft-maximize blue-grey darken-4 toggleClass"></i>
+                <p class="d-none">fullscreen</p></a>
             </div>
             <div class="navbar-container">
                 <div id="navbarSupportedContent" class="collapse navbar-collapse">
@@ -320,21 +328,20 @@
                                             <a class="btn mr-1 btn-round btn-secondary"
                                                href="{% url "organization_export" %}">导出</a>
                                         </p>
+                                        <div style="width: 600px">
+                                            <input id="keyword" type="search" placeHolder="搜索关键字"/>
+                                        </div>
+                                        <div>
+                                            <ul id='tree' class="ztree"></ul>
+                                        </div>
                                     </div>
+
                                 </div>
                             </section>
                         </div>
                     </div>
                     <!--/ Base style table -->
                 </div>
-            </div>
-            <div>
-                <ul id='tree' class="ztree"></ul>
-            </div>
-            <div id="rMenu">
-                <a class="list-group-item aMenu" id="item_add" onclick="organization_add()">增加机构</a>
-                <a class="list-group-item aMenu" id="item_edit" onclick="organization_edit()">修改机构</a>
-                <a class="list-group-item aMenu" id="item_del" onclick="organization_delete()">删除机构</a>
             </div>
         </div>
         <footer class="footer footer-static footer-light">
@@ -345,6 +352,13 @@
             </p>
         </footer>
     </div>
+</div>
+<div id="rMenu">
+    <a class="list-group-item aMenu" id="item_add" onclick="organization_add()">增加机构</a>
+    <a class="list-group-item aMenu" id="item_edit"
+       onclick="organization_edit()">修改机构</a>
+    <a class="list-group-item aMenu" id="item_del"
+       onclick="organization_delete()">删除机构</a>
 </div>
 
 <script src="{% static 'app-assets/vendors/js/core/jquery-3.3.1.min.js' %}"></script>
@@ -367,6 +381,8 @@
 <!-- BEGIN PAGE LEVEL JS-->
 <script src="{% static 'app-assets/js/data-tables/datatable-styling.js' %}"></script>
 <script src="{% static 'ztreejs/jquery.ztree.core.js' %}"></script>
+<script type="text/javascript" src="{% static 'ztreejs/jquery.ztree.exhide.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'ztreejs/fuzzysearch.js' %}"></script>
 <script>
     $.ajaxSetup({
         data: {csrfmiddlewaretoken: "{{ csrf_token }}"},
@@ -374,10 +390,18 @@
     var setting = {
         view: {
             selectedMulti: false,
+            nameIsHTML: true
+        },
+        edit: {
+            enable: false,
+            editNameSelectAll: false
         },
         data: {
             simpleData: {
                 enable: true
+            },
+            keep: {
+                parent: true
             }
         },
         callback: {
@@ -385,9 +409,10 @@
         },
     };
     var zTree = $.fn.zTree.init($("#tree"), setting, {{ data|safe }});
+    zTree.expandAll(true);
+    fuzzySearch('tree', '#keyword', null, true);
 
     function organization_add() {
-
         $('#mymodal').modal('show');
     }
 
@@ -396,7 +421,8 @@
         $.ajax({
             type: 'GET',
             data: {
-                'edit_id': NodeID
+                'edit_id': NodeID,
+                'parent_id': parentID
             },
             url: "{% url "organization_edit" %}",
             dataType: 'json',
@@ -404,7 +430,7 @@
                 $("#edit_name").attr("value", eval("(" + data.org + ")")[0].fields.table_organization_col_name);
                 $("#edit_location").attr("value", eval("(" + data.org + ")")[0].fields.table_organization_col_address);
                 $("#edit_zipcode").attr("value", eval("(" + data.org + ")")[0].fields.table_organization_col_postcode);
-                $("#edit_parent").attr("value", eval("(" + data.org + ")")[0].fields.table_organization_col_parent_name);
+                $("#edit_parent").attr("value", data.parent);
                 $("#edit_field").attr("value", eval("(" + data.org + ")")[0].fields.table_organization_col_field);
             }
         });
@@ -434,6 +460,8 @@
     function NodeClick(event, treeId, treeNode) {
         Nodename = treeNode.name;
         NodeID = treeNode.id;
+        parentID = treeNode.pId;
+
         {#alert(treeNode.children);#}
         if (treeNode.type === 0) {
             return;
@@ -451,7 +479,7 @@
             $("#item_add").show();
             $("#item_del").show();
         }
-        $("#rMenu").css({"top": y + "px", "left": x + "px", "visibility": "visible"}); //设置右键菜单的位置、可见
+        $("#rMenu").css({"top": y + "px", "left": x + "px", "visibility": "visible", 'z-index': '50'}); //设置右键菜单的位置、可见
         $("body").bind("mousedown", onBodyMouseDown);
     }
 
@@ -487,7 +515,7 @@
                 alert(data.message)
             },
             error: function () {
-                toastr.error('Error');
+                alert.error('Error');
             }
         });
         return false;
@@ -520,7 +548,8 @@
 
             },
             error: function () {
-                toastr.error('Error');
+                window.location = 'institute';
+                alert(data.message)
 
             }
         });
@@ -539,11 +568,11 @@
             dataType: "HTML",
             success: function (data) {
                 window.location = 'institute';
-                toastr.success(data.message);
+                alert.success(data.message);
 
             },
             error: function () {
-                toastr.error('Error');
+                alert.error('Error');
 
             }
         });

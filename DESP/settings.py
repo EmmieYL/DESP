@@ -47,7 +47,7 @@ INSTALLED_APPS = [
     'login',
     'captcha',
     'supervisor',
-    'standard',
+    'administrator',
     'password_reset',
 
 ]

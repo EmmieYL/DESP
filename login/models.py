@@ -56,21 +56,17 @@ class TableUser(AbstractUser):
                                                  max_length=128)  # Field name made lowercase.
     table_user_col_sex = models.CharField(db_column='Table_User_col_Sex', max_length=128,
                                           null=True)  # Field name made lowercase.
-    table_user_col_create_time = models.DateTimeField(
-        db_column='Table_User_col_Create_Time', null=True)  # Field name made lowercase.
-    table_user_col_modify_time = models.DateTimeField(
-        db_column='Table_User_col_Modify_Time', null=True)  # Field name made lowercase.
     table_user_col_nationality_id = models.IntegerField(
         db_column='Table_User_col_Nationality_id', null=True)  # Field name made lowercase.
     table_user_col_bachelor = models.CharField(db_column='Table_User_col_Bachelor', max_length=128,
                                                null=True)  # Field name made lowercase.
     table_user_col_memo = models.CharField(db_column='Table_User_col_Memo',
                                            max_length=256)  # Field name made lowercase.
-
+    table_user_col_lastlogintime=models.DateTimeField(db_column='Table_User_col_LastLoginTime',null=True)
+    table_user_col_lastloginIP = models.CharField(db_column='Table_User_col_LastLoginIP',max_length=128,null=True)
     table_user_col_code = models.CharField(max_length=20, verbose_name='验证码', null=True)
     table_user_col_send_type = models.CharField(verbose_name='验证码类型', choices=(('register', '注册'), ('forget', '忘记密码')),
                                                 max_length=20, null=True)
-    table_user_col_send_time = models.DateTimeField(verbose_name='发送时间', default=datetime.now)
     table_user_col_birth = models.CharField(db_column='Table_User_col_Birth', default='1990-01-01', max_length=128)
     table_user_col_IdentityID = models.CharField(db_column='Table_User_col_IdentityID', null=True,max_length=128)
 

@@ -59,19 +59,29 @@ def organization_create(request):
 def organization_edit(request):
     if request.method == 'GET':
         organization_id = request.GET.get('edit_id')
+        parent_id = request.GET.get('parent_id')
         org = serializers.serialize("json",
                                     models.TableOrganization.objects.filter(table_organization_col_id=organization_id))
-        return JsonResponse({'org': org})
+        parent = models.TableOrganization.objects.filter(table_organization_col_id=parent_id).values_list(
+            'table_organization_col_name')[0][0]
+
+        return JsonResponse({'org': org, 'parent': parent})
     elif request.method == 'POST':
         organization_id = request.POST.get('edit_id')
         organization_name = request.POST.get('edit_name')
         organization_location = request.POST.get('edit_location')
         organization_zipcode = request.POST.get('edit_zipcode')
-        parent = models.TableOrganization.objects.get(
-            table_organization_col_name=request.POST.get('edit_parent'))  # 添加判断是否存在这个父节点
+        try:
+            parent = models.TableOrganization.objects.get(
+                table_organization_col_name=request.POST.get('edit_parent'))
+        except:
+            message = '父机构名不存在，请重新输入'
+            return JsonResponse({'message': message})
+            # 添加判断是否存在这个父节点
+        # pdb.set_trace()
         organization_field = request.POST.get('edit_field')
         org = models.TableOrganization.objects.filter(table_organization_col_name=organization_name)
-        if org.exists():
+        if org.exists() and org.values_list('table_organization_col_id')[0][0] == organization_id:
             message = '该机构名已存在，请重新输入'
             return JsonResponse({'message': message})
         try:

@@ -8,7 +8,7 @@ from supervisor.models import TableEvaluation
 # Create your views here.
 from django.db.models import Q
 
-from standard.models import TableEvaluationIndicator
+from administrator.models import TableEvaluationIndicator
 
 
 def tree(request):
